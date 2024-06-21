@@ -1,12 +1,11 @@
 package com.example.course_management.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,6 +15,15 @@ public class User {
     private String role; // ADMIN, STUDENT, TEACHER
     private String name;
     private String email;
+
+    @OneToMany(mappedBy = "teacher")
+    private List<Course> courses;
+
+    @OneToMany(mappedBy = "student")
+    private List<Enrollment> enrollments;
+
+    // Getters and setters
+
     public Long getId() {
         return id;
     }
@@ -62,5 +70,21 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Course> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(List<Course> courses) {
+        this.courses = courses;
+    }
+
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public void setEnrollments(List<Enrollment> enrollments) {
+        this.enrollments = enrollments;
     }
 }

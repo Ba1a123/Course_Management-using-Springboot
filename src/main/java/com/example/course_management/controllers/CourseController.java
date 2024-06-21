@@ -1,69 +1,69 @@
 package com.example.course_management.controllers;
 
 import com.example.course_management.models.Course;
-import com.example.course_management.repositories.course_repository;
+import com.example.course_management.services.Courseservice;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
-    
+
     @Autowired
-    private course_repository courseRepository;
-    
-    // Create a new course
+    private Courseservice courseService;
+
+    // Endpoint to add a course (Admin)
     @PostMapping
-    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        Course savedCourse = courseRepository.save(course);
-        return ResponseEntity.ok(savedCourse);
+    @PreAuthorize("hasRole('ADMIN')")
+    public Course addCourse(@RequestBody Course course) {
+        return courseService.addCourse(course);
     }
-    
-    // Update an existing course
+
+    // Endpoint to update a course (Admin)
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @RequestBody Course courseDetails) {
-        Optional<Course> optionalCourse = courseRepository.findById(id);
-        if (optionalCourse.isPresent()) {
-            Course course = optionalCourse.get();
-            course.setTitle(courseDetails.getTitle());
-            course.setDescription(courseDetails.getDescription());
-            Course updatedCourse = courseRepository.save(course);
-            return ResponseEntity.ok(updatedCourse);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public Course updateCourse(@PathVariable Long id, @RequestBody Course courseDetails) {
+        return courseService.updateCourse(id, courseDetails);
     }
-    
-    // Delete a course
+
+    // Endpoint to delete a course (Admin)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
-        if (courseRepository.existsById(id)) {
-            courseRepository.deleteById(id);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteCourse(@PathVariable Long id) {
+        courseService.deleteCourse(id);
     }
-    
-    // Get all courses
+
+    // Endpoint to get all courses (Admin, Teacher, Student)
     @GetMapping
-    public ResponseEntity<List<Course>> getAllCourses() {
-        List<Course> courses = courseRepository.findAll();
-        return ResponseEntity.ok(courses);
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER', 'STUDENT')")
+    public List<Course> getAllCourses() {
+        return courseService.getAllCourses();
     }
-    
-    // Get a single course by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
-        Optional<Course> optionalCourse = courseRepository.findById(id);
-        if (optionalCourse.isPresent()) {
-            return ResponseEntity.ok(optionalCourse.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+
+    // Endpoint to add a student to a course (Admin, Teacher)
+    @PutMapping("/students/{courseId}/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public String addStudentToCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
+        boolean success = courseService.addStudentToCourse(courseId, studentId);
+        return success ? "Student added to course successfully" : "Failed to add student to course";
+    }
+
+    // Endpoint to remove a student from a course (Admin, Teacher)
+    @DeleteMapping("/students/{courseId}/{studentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public String removeStudentFromCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
+        boolean success = courseService.removeStudentFromCourse(courseId, studentId);
+        return success ? "Student removed from course successfully" : "Failed to remove student from course";
+    }
+
+    // Endpoint to allocate a teacher to a course (Admin)
+    @PutMapping("/teachers/{courseId}/{teacherId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String allocateTeacherToCourse(@PathVariable Long courseId, @PathVariable Long teacherId) {
+        boolean success = courseService.allocateTeacherToCourse(courseId, teacherId);
+        return success ? "Teacher allocated to course successfully" : "Failed to allocate teacher to course";
     }
 }

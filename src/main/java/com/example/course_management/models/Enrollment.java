@@ -1,20 +1,24 @@
 package com.example.course_management.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Enrollment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long studentId;
-    private Long courseId;
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private User student;
 
-    // Getters and Setters
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    // Getters and setters
+
     public Long getId() {
         return id;
     }
@@ -23,19 +27,19 @@ public class Enrollment {
         this.id = id;
     }
 
-    public Long getStudentId() {
-        return studentId;
+    public User getStudent() {
+        return student;
     }
 
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
+    public void setStudent(User student) {
+        this.student = student;
     }
 
-    public Long getCourseId() {
-        return courseId;
+    public Course getCourse() {
+        return course;
     }
 
-    public void setCourseId(Long courseId) {
-        this.courseId = courseId;
+    public void setCourse(Course course) {
+        this.course = course;
     }
 }
